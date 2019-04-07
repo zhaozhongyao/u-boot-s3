@@ -525,7 +525,7 @@ static void sunxi_composer_init(void)
 	struct sunxi_ccm_reg * const ccm =
 		(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
 
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 	clock_set_pll10(432000000);
 
 	/* Set DE parent to pll10 */
@@ -905,7 +905,7 @@ static void sunxi_lcdc_tcon0_mode_set(const struct ctfb_res_modes *mode,
 		(struct sunxi_lcdc_reg *)SUNXI_LCD0_BASE;
 	int bp, clk_delay, clk_div, clk_double, pin, total, val;
 
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 #if defined CONFIG_MACH_SUN8I && defined CONFIG_VIDEO_LCD_IF_LVDS
 	for (pin = SUNXI_GPD(18); pin <= SUNXI_GPD(27); pin++) {
 #else

@@ -31,7 +31,7 @@
 #define SUNXI_PWM_MUX			SUN8I_GPH_PWM
 #endif
 
-#if defined CONFIG_MACH_SUN8I_V3S
+#if defined CONFIG_MACH_SUN8I_V3S || defined CONFIG_MACH_SUN8I_S3
 #define SUNXI_PWM_PIN0			SUNXI_GPB(4)
 #define SUNXI_PWM_MUX			SUN8I_V3S_GPB_PWM
 #endif

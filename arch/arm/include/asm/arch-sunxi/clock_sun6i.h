@@ -451,7 +451,7 @@ struct sunxi_ccm_reg {
 /* CCM bits common to all Display Engine 2.0 clock ctrl regs */
 #define CCM_DE2_CTRL_M(n)		((((n) - 1) & 0xf) << 0)
 #define CCM_DE2_CTRL_PLL_MASK		(3 << 24)
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 #define CCM_DE2_CTRL_PLL6_2X		(0 << 24)
 #define CCM_DE2_CTRL_PLL10		(1 << 24)
 #else

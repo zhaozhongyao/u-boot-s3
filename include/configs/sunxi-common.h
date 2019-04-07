@@ -77,7 +77,7 @@
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define CONFIG_SYS_LOAD_ADDR		0x41000000 /* default load address */
 /* V3s do not have enough memory to place code at 0x4a000000 */
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 #define CONFIG_SYS_TEXT_BASE		0x4a000000
 #else
 #define CONFIG_SYS_TEXT_BASE		0x42e00000
@@ -153,7 +153,7 @@
 #define CONFIG_SYS_MMC_MAX_DEVICE	4
 #endif
 
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 /* 64MB of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (64 << 20))
 #else
@@ -303,7 +303,7 @@ extern int soft_i2c_gpio_scl;
  * The amount of RAM to keep free at the top of RAM when relocating u-boot,
  * to use as framebuffer. This must be a multiple of 4096.
  */
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 #define CONFIG_SUNXI_MAX_FB_SIZE (16 << 20)
 #else
 #define CONFIG_SUNXI_MAX_FB_SIZE (2 << 20)
@@ -410,7 +410,7 @@ extern int soft_i2c_gpio_scl;
  * 32M uncompressed kernel, 16M compressed kernel, 1M fdt,
  * 1M script, 1M pxe and the ramdisk at the end.
  */
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 #define BOOTM_SIZE     __stringify(0xa000000)
 #define KERNEL_ADDR_R  __stringify(SDRAM_OFFSET(2000000))
 #define FDT_ADDR_R     __stringify(SDRAM_OFFSET(3000000))
@@ -440,7 +440,7 @@ extern int soft_i2c_gpio_scl;
 	"pxefile_addr_r=" PXEFILE_ADDR_R "\0" \
 	"ramdisk_addr_r=" RAMDISK_ADDR_R "\0"
 
-#ifndef CONFIG_MACH_SUN8I_V3S
+#if !defined(CONFIG_MACH_SUN8I_V3S) && !defined(CONFIG_MACH_SUN8I_S3)
 #define DFU_ALT_INFO_RAM \
 	"dfu_alt_info_ram=" \
 	"kernel ram " KERNEL_ADDR_R " 0x1000000;" \

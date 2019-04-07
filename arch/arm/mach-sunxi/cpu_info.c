@@ -87,7 +87,7 @@ int print_cpuinfo(void)
 	printf("CPU:   Allwinner A83T (SUN8I %04x)\n", sunxi_get_sram_id());
 #elif defined CONFIG_MACH_SUN8I_H3
 	printf("CPU:   Allwinner H3 (SUN8I %04x)\n", sunxi_get_sram_id());
-#elif defined CONFIG_MACH_SUN8I_V3S
+#elif defined CONFIG_MACH_SUN8I_V3S || defined CONFIG_MACH_SUN8I_S3
 	printf("CPU:   Allwinner V3s (SUN8I %04x)\n", sunxi_get_sram_id());
 #elif defined CONFIG_MACH_SUN9I
 	puts("CPU:   Allwinner A80 (SUN9I)\n");
