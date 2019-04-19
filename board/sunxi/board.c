@@ -75,6 +75,104 @@ static int soft_i2c_board_init(void)
 static int soft_i2c_board_init(void) { return 0; }
 #endif
 
+#if 1	//5" IPS 480x854
+
+#define DELAYBIT	10
+
+int lcd_rst;
+int lcd_spics;
+int lcd_spiclk;
+int lcd_spimosi;
+
+void SPI_WriteComm(unsigned int cmd)
+{
+	int i,cnt,delay;
+	int par=(cmd>>0x08)&0xff;
+	par |= 0x2000;	//H/L
+	
+	gpio_direction_output(lcd_spics, 0);
+	for(i=15,cnt=0; cnt<16; i--,cnt++)
+	{
+		if(par&(0x01<<i))
+			gpio_direction_output(lcd_spimosi, 1);
+		else
+			gpio_direction_output(lcd_spimosi, 0);
+				
+		gpio_direction_output(lcd_spiclk, 1);
+	
+		delay=DELAYBIT;
+		while(delay--);
+		
+		gpio_direction_output(lcd_spiclk, 0);
+
+		delay=DELAYBIT;
+		while(delay--);			
+	}	
+	gpio_direction_output(lcd_spics, 1);
+
+		delay=DELAYBIT;
+		while(delay--);	
+		
+		par=cmd&0xff;
+		
+	gpio_direction_output(lcd_spics, 0);
+	for(i=15,cnt=0; cnt<16; i--,cnt++)
+	{
+		if(par&(0x01<<i))
+			gpio_direction_output(lcd_spimosi, 1);
+		else
+			gpio_direction_output(lcd_spimosi, 0);
+				
+		gpio_direction_output(lcd_spiclk, 1);
+	
+		delay=DELAYBIT;
+		while(delay--);
+		
+		gpio_direction_output(lcd_spiclk, 0);
+
+		delay=DELAYBIT;
+		while(delay--);			
+	}
+	
+	gpio_direction_output(lcd_spics, 1);	
+}
+
+void SPI_WriteData(unsigned int dat)
+{
+	int i,cnt,delay;
+	int par=dat&0xff;
+
+	par|=0x4000;	//C/D bit
+	
+	gpio_direction_output(lcd_spics, 0);
+	for(i=15,cnt=0; cnt<16; i--,cnt++)
+	{
+		if(par&(0x01<<i))
+			gpio_direction_output(lcd_spimosi, 1);
+		else
+			gpio_direction_output(lcd_spimosi, 0);
+				
+		gpio_direction_output(lcd_spiclk, 1);
+	
+		delay=DELAYBIT;
+		while(delay--);
+		
+		gpio_direction_output(lcd_spiclk, 0);
+
+		delay=DELAYBIT;
+		while(delay--);			
+	}
+	
+	gpio_direction_output(lcd_spics, 1);	
+}
+#endif
+
+void Delay_ms(int ms)
+{
+	int delay=ms*1000*20;
+	while(delay--);
+}
+
 DECLARE_GLOBAL_DATA_PTR;
 
 /* add board specific code here */
@@ -124,6 +222,471 @@ int board_init(void)
 #ifdef CONFIG_MACPWR
 	gpio_request(CONFIG_MACPWR, "macpwr");
 	gpio_direction_output(CONFIG_MACPWR, 1);
+#endif
+
+#if 1
+	int led_r;
+	led_r = sunxi_name_to_gpio("PB3");
+	if (led_r < 0) {
+		printf("Error invalid led_r pin: PB, err %d\n", led_r);
+		return led_r;
+	}
+	ret = gpio_request(led_r, "led_r");
+	if (ret) {
+		printf("Error requesting soft led_r: PB, err %d\n",ret);
+		return ret;
+	}	
+	gpio_direction_output(led_r, 1);
+#if 0	
+	Delay_ms(50);
+	gpio_direction_output(led_r, 0);
+	Delay_ms(50);
+	gpio_direction_output(led_r, 1);
+	Delay_ms(50);
+	gpio_direction_output(led_r, 0);
+	Delay_ms(50);
+	gpio_direction_output(led_r, 1);		
+#endif	
+#endif
+
+#if 1		//zengfh 5" IPS LCD
+	int delayms,i,delay;
+	lcd_rst = sunxi_name_to_gpio("PE17");
+	if (lcd_rst < 0) {
+		printf("Error invalid lcd_spics pin: PA, err %d\n", lcd_rst);
+		return lcd_rst;
+	}
+	ret = gpio_request(lcd_rst, "lcd_rst");
+	if (ret) {
+		printf("Error requesting soft lcd_spics: PA, err %d\n",ret);
+		return ret;
+	}
+	else
+		printf("PE17-->lcd_rst request OK\n");
+		
+	lcd_spics = sunxi_name_to_gpio("PE14");
+	if (lcd_spics < 0) {
+		printf("Error invalid lcd_spics pin: PE, err %d\n", lcd_spics);
+		return lcd_spics;
+	}
+	ret = gpio_request(lcd_spics, "lcd_spics");
+	if (ret) {
+		printf("Error requesting soft lcd_spics: PE, err %d\n",ret);
+		return ret;
+	}
+	else
+		printf("PE14-->lcd_spics request OK\n");
+			
+	lcd_spiclk = sunxi_name_to_gpio("PE15");
+	if (lcd_spiclk < 0) {
+		printf("Error invalid lcd_spiclk pin: PE, err %d\n", lcd_spiclk);
+		return lcd_spiclk;
+	}
+	ret = gpio_request(lcd_spiclk, "lcd_spiclk");
+	if (ret) {
+		printf("Error requesting soft lcd_spiclk: PE, err %d\n",ret);
+		return ret;
+	}
+	else
+		printf("PE15-->lcd_spiclk request OK\n");
+			
+	lcd_spimosi = sunxi_name_to_gpio("PE16");
+	if (lcd_spimosi < 0) {
+		printf("Error invalid lcd_spimosi pin: PE, err %d\n", lcd_spimosi);
+		return lcd_spimosi;
+	}
+	ret = gpio_request(lcd_spimosi, "lcd_spimosi");
+	if (ret) {
+		printf("Error requesting soft lcd_spimosi: PE, err %d\n",ret);
+		return ret;
+	}	
+	else
+		printf("PE16-->lcd_spimosi request OK\n");
+
+	gpio_direction_output(lcd_spics, 1);
+	gpio_direction_output(lcd_spiclk, 0);
+	gpio_direction_output(lcd_spimosi, 0);		
+	gpio_direction_output(lcd_rst, 1);
+	for(delay=200; delay>0; delay--)
+		printf("delay 1ms ------------------ OK\n");
+		
+	Delay_ms(1000);
+
+	//gpio_direction_output(lcd_rst, 0);
+	//Delay_ms(100);
+	//gpio_direction_output(lcd_rst, 1);
+	//Delay_ms(100);
+
+	SPI_WriteComm(0x1100);
+	Delay_ms(20);
+	
+	SPI_WriteComm(0xFF00);
+	SPI_WriteData(0x77);
+	SPI_WriteComm(0xFF01);
+	SPI_WriteData(0x01);
+	SPI_WriteComm(0xFF02);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xFF03);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xFF04);
+	SPI_WriteData(0x10);
+	
+	SPI_WriteComm(0xC000);
+	SPI_WriteData(0xE9);
+	SPI_WriteComm(0xC001);
+	SPI_WriteData(0x03);
+	
+	SPI_WriteComm(0xC100);
+	SPI_WriteData(0x0A);
+	SPI_WriteComm(0xC101);
+	SPI_WriteData(0x02);
+	
+	SPI_WriteComm(0xC200);
+	SPI_WriteData(0x01);
+	SPI_WriteComm(0xC201);
+	SPI_WriteData(0x06);
+#if 1
+	SPI_WriteComm(0xC300);	//RGB
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xC301);
+	SPI_WriteData(0x02);
+	SPI_WriteComm(0xC302);
+	SPI_WriteData(0x02);
+#endif		
+	SPI_WriteComm(0xCC00);
+	SPI_WriteData(0x10);
+	
+	SPI_WriteComm(0xB000);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xB001);
+	SPI_WriteData(0x12);
+	SPI_WriteComm(0xB002);
+	SPI_WriteData(0x1A);
+	SPI_WriteComm(0xB003);
+	SPI_WriteData(0x0D);
+	SPI_WriteComm(0xB004);
+	SPI_WriteData(0x11);
+	SPI_WriteComm(0xB005);
+	SPI_WriteData(0x07);
+	SPI_WriteComm(0xB006);
+	SPI_WriteData(0x0C);
+	SPI_WriteComm(0xB007);
+	SPI_WriteData(0x0A);
+	SPI_WriteComm(0xB008);
+	SPI_WriteData(0x09);
+	SPI_WriteComm(0xB009);
+	SPI_WriteData(0x26);
+	SPI_WriteComm(0xB00a);
+	SPI_WriteData(0x05);
+	SPI_WriteComm(0xB00b);
+	SPI_WriteData(0x11);
+	SPI_WriteComm(0xB00c);
+	SPI_WriteData(0x10);
+	SPI_WriteComm(0xB00d);
+	SPI_WriteData(0x2B);
+	SPI_WriteComm(0xB00e);
+	SPI_WriteData(0x33);
+	SPI_WriteComm(0xB00f);
+	SPI_WriteData(0x1B);
+	
+	SPI_WriteComm(0xB100);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xB101);
+	SPI_WriteData(0x12);
+	SPI_WriteComm(0xB102);
+	SPI_WriteData(0x1A);
+	SPI_WriteComm(0xB103);
+	SPI_WriteData(0x0D);
+	SPI_WriteComm(0xB104);
+	SPI_WriteData(0x11);
+	SPI_WriteComm(0xB105);
+	SPI_WriteData(0x06);
+	SPI_WriteComm(0xB106);
+	SPI_WriteData(0x0B);
+	SPI_WriteComm(0xB107);
+	SPI_WriteData(0x07);
+	SPI_WriteComm(0xB108);
+	SPI_WriteData(0x08);
+	SPI_WriteComm(0xB109);
+	SPI_WriteData(0x26);
+	SPI_WriteComm(0xB10a);
+	SPI_WriteData(0x03);
+	SPI_WriteComm(0xB10b);
+	SPI_WriteData(0x11);
+	SPI_WriteComm(0xB10c);
+	SPI_WriteData(0x0F);
+	SPI_WriteComm(0xB10d);
+	SPI_WriteData(0x2B);
+	SPI_WriteComm(0xB10e);
+	SPI_WriteData(0x33);
+	SPI_WriteComm(0xB10f);
+	SPI_WriteData(0x1B);
+	
+	SPI_WriteComm(0xFF00);
+	SPI_WriteData(0x77);
+	SPI_WriteComm(0xFF01);
+	SPI_WriteData(0x01);
+	SPI_WriteComm(0xFF02);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xFF03);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xFF04);
+	SPI_WriteData(0x11);
+	
+	SPI_WriteComm(0xB000);
+	SPI_WriteData(0x4D);
+	
+	SPI_WriteComm(0xB100);
+	SPI_WriteData(0x2C);
+	
+	SPI_WriteComm(0xB200);
+	SPI_WriteData(0x87);
+	
+	SPI_WriteComm(0xB300);
+	SPI_WriteData(0x80);
+	
+	SPI_WriteComm(0xB500);
+	SPI_WriteData(0x40);
+	
+	SPI_WriteComm(0xB700);
+	SPI_WriteData(0x85);
+	
+	SPI_WriteComm(0xB800);
+	SPI_WriteData(0x21);
+	
+	SPI_WriteComm(0xB900);
+	SPI_WriteData(0x10);
+	
+	SPI_WriteComm(0xC000);
+	SPI_WriteData(0x03);
+	
+	SPI_WriteComm(0xC100);
+	SPI_WriteData(0x78);
+	
+	SPI_WriteComm(0xC200);
+	SPI_WriteData(0x78);
+	
+	SPI_WriteComm(0xD000);
+	SPI_WriteData(0x88);
+	Delay_ms(100);
+	
+	SPI_WriteComm(0xE000);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE001);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE002);
+	SPI_WriteData(0x02);
+	
+	SPI_WriteComm(0xE100);
+	SPI_WriteData(0x04);
+	SPI_WriteComm(0xE101);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE102);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE103);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE104);
+	SPI_WriteData(0x05);
+	SPI_WriteComm(0xE105);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE106);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE107);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE108);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE109);
+	SPI_WriteData(0x20);
+	SPI_WriteComm(0xE10a);
+	SPI_WriteData(0x20);
+	
+	SPI_WriteComm(0xE200);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE201);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE202);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE203);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE204);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE205);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE206);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE207);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE208);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE209);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE20a);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE20b);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE20c);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xE300);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE301);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE302);
+	SPI_WriteData(0x33);
+	SPI_WriteComm(0xE303);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xE400);
+	SPI_WriteData(0x22);
+	SPI_WriteComm(0xE401);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xE500);
+	SPI_WriteData(0x04);
+	SPI_WriteComm(0xE501);
+	SPI_WriteData(0x5C);
+	SPI_WriteComm(0xE502);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE503);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE504);
+	SPI_WriteData(0x06);
+	SPI_WriteComm(0xE505);
+	SPI_WriteData(0x5C);
+	SPI_WriteComm(0xE506);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE507);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE508);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE509);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE50a);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE50b);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE50c);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE50d);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE50e);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE50f);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xE600);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE601);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE602);
+	SPI_WriteData(0x33);
+	SPI_WriteComm(0xE603);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xE700);
+	SPI_WriteData(0x22);
+	SPI_WriteComm(0xE701);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xE800);
+	SPI_WriteData(0x05);
+	SPI_WriteComm(0xE801);
+	SPI_WriteData(0x5C);
+	SPI_WriteComm(0xE802);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE803);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE804);
+	SPI_WriteData(0x07);
+	SPI_WriteComm(0xE805);
+	SPI_WriteData(0x5C);
+	SPI_WriteComm(0xE806);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE807);
+	SPI_WriteData(0xA0);
+	SPI_WriteComm(0xE808);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE809);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE80a);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE80b);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE80c);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE80d);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE80e);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xE80f);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xEB00);
+	SPI_WriteData(0x02);
+	SPI_WriteComm(0xEB01);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xEB02);
+	SPI_WriteData(0x40);
+	SPI_WriteComm(0xEB03);
+	SPI_WriteData(0x40);
+	SPI_WriteComm(0xEB04);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xEB05);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xEB06);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xEC00);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xEC01);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0xED00);
+	SPI_WriteData(0xFA);
+	SPI_WriteComm(0xED01);
+	SPI_WriteData(0x45);
+	SPI_WriteComm(0xED02);
+	SPI_WriteData(0x0B);
+	SPI_WriteComm(0xED03);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED04);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED05);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED06);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED07);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED08);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED09);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED0a);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED0b);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED0c);
+	SPI_WriteData(0xFF);
+	SPI_WriteComm(0xED0d);
+	SPI_WriteData(0xB0);
+	SPI_WriteComm(0xED0e);
+	SPI_WriteData(0x54);
+	SPI_WriteComm(0xED0f);
+	SPI_WriteData(0xAF);
+	
+	SPI_WriteComm(0xFF00);
+	SPI_WriteData(0x77);
+	SPI_WriteComm(0xFF01);
+	SPI_WriteData(0x01);
+	SPI_WriteComm(0xFF02);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xFF03);
+	SPI_WriteData(0x00);
+	SPI_WriteComm(0xFF04);
+	SPI_WriteData(0x00);
+	
+	SPI_WriteComm(0x2900);
+
 #endif
 
 	/* Uses dm gpio code so do this here and not in i2c_init_board() */
@@ -296,13 +859,7 @@ static void mmc_pinmux_setup(int sdc)
 		}
 #elif defined(CONFIG_MACH_SUN8I) || defined(CONFIG_MACH_SUN50I)
 		/* SDC2: PC5-PC6, PC8-PC16 */
-		for (pin = SUNXI_GPC(5); pin <= SUNXI_GPC(6); pin++) {
-			sunxi_gpio_set_cfgpin(pin, SUNXI_GPC_SDC2);
-			sunxi_gpio_set_pull(pin, SUNXI_GPIO_PULL_UP);
-			sunxi_gpio_set_drv(pin, 2);
-		}
-
-		for (pin = SUNXI_GPC(8); pin <= SUNXI_GPC(16); pin++) {
+		for (pin = SUNXI_GPC(0); pin <= SUNXI_GPC(10); pin++) {
 			sunxi_gpio_set_cfgpin(pin, SUNXI_GPC_SDC2);
 			sunxi_gpio_set_pull(pin, SUNXI_GPIO_PULL_UP);
 			sunxi_gpio_set_drv(pin, 2);
