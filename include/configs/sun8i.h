@@ -32,6 +32,7 @@
  */
 #include <configs/sunxi-common.h>
 
+#if 0
 #undef CONFIG_BOOTCOMMAND
 #undef CONFIG_BOOTARGS
 
@@ -41,6 +42,7 @@
 
 #ifndef CONFIG_BOOTARGS
 #define CONFIG_BOOTARGS       "console=ttyS0,115200 earlyprintk panic=5 rootwait mtdparts=spi32766.0:992k(uboot)ro,32k(env)ro,64k(dtb)ro,5M(kernel)ro,-(rootfs) root=31:04 rw rootfstype=jffs2"
+#endif
 #endif
 
 #endif /* __CONFIG_H */
