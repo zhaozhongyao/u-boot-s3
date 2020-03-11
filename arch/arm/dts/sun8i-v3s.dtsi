@@ -213,6 +213,12 @@
 				function = "uart0";
 				bias-pull-up;
 			};
+			
+			uart1_pins_a: uart1@0 {
+				pins = "PG6", "PG7";
+				function = "uart1";
+				bias-pull-up;
+			};
 
 			mmc0_pins_a: mmc0@0 {
 				pins = "PF0", "PF1", "PF2", "PF3",

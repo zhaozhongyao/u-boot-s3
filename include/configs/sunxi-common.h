@@ -274,7 +274,7 @@ extern int soft_i2c_gpio_scl;
 #endif
 
 #ifndef CONFIG_CONS_INDEX
-#define CONFIG_CONS_INDEX              1       /* UART0 */
+#define CONFIG_CONS_INDEX              2       /* UART0 */
 #endif
 
 #ifdef CONFIG_REQUIRE_SERIAL_CONSOLE
@@ -285,6 +285,8 @@ extern int soft_i2c_gpio_scl;
 #define OF_STDOUT_PATH		"/soc@01c00000/serial@01c28000:115200"
 #endif
 #elif CONFIG_CONS_INDEX == 2 && defined(CONFIG_MACH_SUN5I)
+#define OF_STDOUT_PATH		"/soc@01c00000/serial@01c28400:115200"
+#elif CONFIG_CONS_INDEX == 2 && defined(CONFIG_MACH_SUN8I)
 #define OF_STDOUT_PATH		"/soc@01c00000/serial@01c28400:115200"
 #elif CONFIG_CONS_INDEX == 3 && defined(CONFIG_MACH_SUN8I)
 #define OF_STDOUT_PATH		"/soc@01c00000/serial@01c28800:115200"
